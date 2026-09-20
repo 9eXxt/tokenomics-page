@@ -1,0 +1,30 @@
+name: Capture article
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install SingleFile CLI
+        run: npm install single-file-cli
+      - name: Capture article
+        run: npx single-file "https://desh.group/blog/web3-tokenomics-in-2026" index.html --browser-executable-path=/usr/bin/google-chrome
+      - name: Commit archived page
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git diff --cached --quiet && exit 0
+          git commit -m "Archive tokenomics article"
+          git push
